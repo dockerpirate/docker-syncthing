@@ -1,4 +1,4 @@
-FROM hypriot/rpi-alpine:latest as buildstage
+FROM lsiobase/alpine:3.11 as buildstage
 
 # build variables
 ARG SYNCTHING_RELEASE
@@ -37,13 +37,13 @@ echo "**** fetch source code ****" && \
 	build syncthing
 
 ############## runtime stage ##############
-FROM arm32v7/alpine:latest
+FROM lsiobase/alpine:3.11
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="Dockerpirate version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="dockerpirate"
+LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="thelamer"
 
 # environment settings
 ENV HOME="/config"
