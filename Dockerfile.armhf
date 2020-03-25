@@ -1,4 +1,4 @@
-FROM arm32v7/alpine:latest as buildstage
+FROM hypriot/rpi-alpine:latest as buildstage
 
 # build variables
 ARG SYNCTHING_RELEASE
