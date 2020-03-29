@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.11 as buildstage
+FROM arm32v7/alpine as buildstage
 
 # build variables
 ARG SYNCTHING_RELEASE
@@ -37,13 +37,13 @@ echo "**** fetch source code ****" && \
 	build syncthing
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.11
+FROM arm32v7/alpine
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="thelamer"
+LABEL build_version="dockerpirate version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="dockerpirate"
 
 # environment settings
 ENV HOME="/config"
