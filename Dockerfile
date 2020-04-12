@@ -1,62 +1,19 @@
-FROM arm32v7/alpine as buildstage
+ARG BASE_IMAGE_VERSION=latest
+FROM arm32v7/alpine:$BASE_IMAGE_VERSION
+LABEL image.name="epicsoft_borgbackup" \
+      image.description="Simple BorgBackup Docker Image" \
+      maintainer="epicsoft.de" \
+      maintainer.name="Alexander Schwarz <schwarz@epicsoft.de>" \
+      maintainer.copyright="Copyright 2018-2019 epicsoft.de / Alexander Schwarz" \
+      license="MIT"
 
-# build variables
-ARG SYNCTHING_RELEASE
+RUN apk --no-cache add borgbackup \
+ && rm -rf /var/cache/apk/*
 
-RUN \
- echo "**** install build packages ****" && \
- apk add --no-cache \
-	curl \
-	g++ \
-	gcc \
-	git \
-	go \
-	tar
+USER root
 
-RUN \
-echo "**** fetch source code ****" && \
- if [ -z ${SYNCTHING_RELEASE+x} ]; then \
-	SYNCTHING_RELEASE=$(curl -sX GET "https://api.github.com/repos/syncthing/syncthing/releases/latest" \
-	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
- fi && \
- mkdir -p \
-	/tmp/sync && \
- curl -o \
- /tmp/syncthing-src.tar.gz -L \
-	"https://github.com/syncthing/syncthing/archive/${SYNCTHING_RELEASE}.tar.gz" && \
- tar xf \
- /tmp/syncthing-src.tar.gz -C \
-	/tmp/sync --strip-components=1 && \
- echo "**** compile syncthing  ****" && \
- cd /tmp/sync && \
- rm -f go.sum && \
- go clean -modcache && \
- CGO_ENABLED=0 go run build.go \
-	-no-upgrade \
-	-version=${SYNCTHING_RELEASE} \
-	build syncthing
+WORKDIR /
 
-############## runtime stage ##############
-FROM arm32v7/alpine
+ENTRYPOINT [ "borg" ]
 
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-LABEL build_version="dockerpirate version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="dockerpirate"
-
-# environment settings
-ENV HOME="/config"
-
-RUN \
- echo "**** create var lib folder ****" && \
- install -d -o abc -g abc \
-	/var/lib/syncthing
-
-# copy files from build stage and local files
-COPY --from=buildstage /tmp/sync/syncthing /usr/bin/
-COPY root/ /
-
-# ports and volumes
-EXPOSE 8384 22000 21027/UDP
-VOLUME /config
+CMD [ "--show-version" ]
